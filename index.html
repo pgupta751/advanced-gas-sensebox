@@ -162,8 +162,7 @@
     <div class="kicker">Advanced GIS &middot; Assignment 3</div>
     <h1>SenseBox Temperature Data near the Sihl river</h1>
     <p>A SenseBox carried on a 43-minute evening walk near Leimbach, in the Sihl valley
-       (10&nbsp;May&nbsp;2026, 20:19&ndash;21:02 local). The first minutes were discarded as a
-       startup artifact &mdash; the sensor was still warm from its bag. Once equilibrated, it
+       (10&nbsp;May&nbsp;2026, 20:19&ndash;21:02 local). The sensor
        held a steady <strong>~14&deg;C</strong> and <strong>~95% humidity</strong>, closely
        matching the official Z&uuml;rich-Fluntern station that same evening. The stable
        colours are the point: the valley air was genuinely uniform, and the cleaned readings
@@ -174,7 +173,7 @@
 
     <!-- visibility toggle (controls the external Fluntern layer) -->
     <h2>Compare with the official station</h2>
-    <p class="small">Toggle the MeteoSwiss Z&uuml;rich-Fluntern reading on/off to compare your
+    <p class="small">Toggle the MeteoSwiss Z&uuml;rich-Fluntern reading on/off to compare sensor's
        mobile readings against a fixed station measuring the same evening.</p>
     <div class="toggle">
       <input type="checkbox" id="toggle-fluntern" checked />
@@ -192,7 +191,7 @@
         <span><span style="display:inline-block;width:10px;height:3px;background:#c8702a;vertical-align:middle;"></span> SenseBox (mobile)</span>
         <span><span style="display:inline-block;width:10px;height:3px;background:#1c2733;vertical-align:middle;"></span> Fluntern (fixed)</span>
       </div>
-      <p class="small" style="margin-top:6px;">Minutes after 18:00&nbsp;UTC. Once past its bag-warmed
+      <p class="small" style="margin-top:6px;">Minutes after 20:00&nbsp;Zurich time. Once past its bag-warmed
         start, the SenseBox tracks the official station within ~1&deg;C &mdash; the readings are validated.</p>
     </div>
 
@@ -222,7 +221,8 @@
     <p class="small">
       Layer 1 &mdash; SenseBox, 302 valid points (the first ~7&nbsp;min / 114 points were
       removed as a sensor-equilibration artifact: the device read ~23&deg;C at ~2&nbsp;lux,
-      i.e. still inside a bag). Coordinates joined from a Strava GPX track by timestamp. (sensebox GPS didn't work)
+      i.e. still inside a bag). Coordinates joined from a Strava GPX track by timestamp. (sensebox GPS sensor didn't work)
+
       Layer 2 &mdash; MeteoSwiss Fluntern (SMA), 10 readings bracketing the walk window.
       <strong>Limitation:</strong> the dense Stadtklima Z&uuml;rich network had not yet
       published May data and its nearest station was 1.5&nbsp;km away, so Fluntern (~5&nbsp;km
