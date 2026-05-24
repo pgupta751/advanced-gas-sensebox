@@ -55,7 +55,7 @@
   <!-- esriConfig MUST be set before the SDK script loads (carries the API key) -->
   <script>
     var esriConfig = {
-      apiKey: "AAPTaf1DEwZmIVkZlLPfNhpcDOg..BzyvETjvONOLbqEnKSRxVL_PE2j1i3W7pmizZhM97YMwAj6bhGEHX6OWYTJds-_TCdLaGKRQnFrkwFO-iRPL_wweN0VWVXy4eEMcoTvP-7S5vNULDV0f0kTVqzBVbVyEA7BGB1SmsNh31MYq8Lg2l8NQiRMLJh_XNcFbhrLAQ31yxBthf198NZV_AYDMExeu4eX-oEDb2mpDIGaXqHNE_qzF-h78gA0iPm--XvkPzQQUQXM3mUp5UMXPPPqEB56WuEoHZLa1yXbzpiEqAT1_CiBBQjAZ"   /* <-- paste your ArcGIS Online API key */
+      apiKey: "AAPTaf1DEwZmIVkZlLPfNhpcDOg..BzyvETjvONOLbqEnKSRxVL_PE2j1i3W7pmizZhM97YMwAj6bhGEHX6OWYTJds-_TCdLaGKRQnFrkwFO-iRPL_wweN0VWVXy4eEMcoTvP-7S5vNULDV0f0kTVqzBVbVyEA7BGB1SmsNh31MYq8Lg2l8NQiRMLJh_XNcFbhrLAQ31yxBthf198NZV_AYDMExeu4eX-oEDb2mpDIGaXqHNE_qzF-h78gA0iPm--XvkPzQQUQXM3mUp5UMXPPPqEB56WuEoHZLa1yXbzpiEqAT1_CiBBQjAZ" 
     };
   </script>
   <script type="module" src="https://js.arcgis.com/5.0/"></script>
@@ -180,6 +180,20 @@
       <input type="checkbox" id="toggle-fluntern" checked />
       <span class="swatch" style="background:#1c2733;"></span>
       <label for="toggle-fluntern">Show MeteoSwiss Fluntern station</label>
+    </div>
+
+    <!-- FURTHER FUNCTIONALITY: temperature-vs-time comparison chart.
+         Drawn as inline SVG from data embedded in the script below (no external library).
+         Shows the SenseBox transect converging onto the flat official-station line. -->
+    <div id="chart-wrap" style="margin-top:14px;">
+      <svg id="chart" viewBox="0 0 340 180" width="100%" role="img"
+           aria-label="Temperature over time: SenseBox vs Fluntern"></svg>
+      <div style="display:flex; gap:16px; font-size:0.74rem; color:#5c6470; margin-top:4px;">
+        <span><span style="display:inline-block;width:10px;height:3px;background:#c8702a;vertical-align:middle;"></span> SenseBox (mobile)</span>
+        <span><span style="display:inline-block;width:10px;height:3px;background:#1c2733;vertical-align:middle;"></span> Fluntern (fixed)</span>
+      </div>
+      <p class="small" style="margin-top:6px;">Minutes after 18:00&nbsp;UTC. Once past its bag-warmed
+        start, the SenseBox tracks the official station within ~1&deg;C &mdash; the readings are validated.</p>
     </div>
 
     <!-- REQUIRED: theme/purpose already stated above. Below: the three policy sections. -->
@@ -312,6 +326,51 @@
     /* Optional nicety: frame the SenseBox data when everything is ready. */
     await fluntern.when();
     mapEl.view.goTo(sensebox.fullExtent.expand(1.4));
+  </script>
+
+  <!-- ============================================================================
+       CHART SCRIPT (standalone — independent of the map).
+       Draws the temperature-vs-time comparison as inline SVG from embedded arrays.
+       Data is a static snapshot extracted from the two CSVs (the walk is in the past,
+       so the values never change). x = minutes after 18:00 UTC, y = temperature (C).
+       ============================================================================ -->
+  <script>
+    // [minutes_after_18:00_UTC, temperature_C]
+    const SB_DATA=[[26.12,14.84],[26.72,14.74],[27.32,14.67],[27.9,14.69],[28.5,14.8],[29.1,14.83],[29.7,14.75],[30.3,14.69],[30.9,14.47],[31.48,14.27],[32.08,14.43],[32.68,14.61],[33.28,14.65],[33.88,15.52],[34.48,15.43],[35.08,15.08],[35.67,14.95],[36.27,14.64],[36.87,14.42],[37.47,14.47],[38.07,14.49],[38.67,14.32],[39.27,14.25],[39.87,14.24],[40.45,14.13],[41.05,14.09],[41.65,14.06],[42.25,14.01],[42.85,13.96],[43.45,13.92],[44.03,13.91],[44.63,13.76],[45.23,13.7],[45.83,13.71],[46.43,13.77],[47.03,13.73],[47.63,13.77],[48.22,13.74],[48.82,13.74],[49.42,13.73],[50.02,13.69],[50.62,13.76],[51.22,13.89],[51.82,13.8],[52.4,13.79],[53.0,13.84],[53.6,13.96],[54.2,13.96],[54.8,13.89],[55.4,13.91],[56.0,13.95],[56.58,14.01],[57.18,13.98],[57.78,13.87],[58.38,13.88],[58.98,13.87],[59.58,13.88],[60.18,13.89],[60.77,14.06],[61.37,14.14],[61.97,14.13]];
+    const FL_DATA=[[0.0,13.4],[10.0,13.4],[20.0,13.5],[30.0,13.3],[40.0,13.4],[50.0,13.2],[60.0,13.3],[70.0,13.4],[80.0,13.3],[90.0,13.3]];
+
+    (function drawChart(){
+      const svg=document.getElementById("chart");
+      const W=340,H=180, m={t:10,r:10,b:26,l:30};        // viewBox + margins
+      const plotW=W-m.l-m.r, plotH=H-m.t-m.b;
+      // Fixed axis ranges so both series share one coordinate space
+      const xMin=0, xMax=92, yMin=12.5, yMax=16;
+      const sx=v=> m.l + (v-xMin)/(xMax-xMin)*plotW;
+      const sy=v=> m.t + (1-(v-yMin)/(yMax-yMin))*plotH;
+      const NS="http://www.w3.org/2000/svg";
+      const add=(tag,attrs)=>{const e=document.createElementNS(NS,tag);
+        for(const k in attrs)e.setAttribute(k,attrs[k]); svg.appendChild(e); return e;};
+
+      // Y gridlines + labels (13,14,15,16 C)
+      for(let t=13;t<=16;t++){
+        add("line",{x1:m.l,y1:sy(t),x2:W-m.r,y2:sy(t),stroke:"#e4ded0","stroke-width":1});
+        const lbl=add("text",{x:m.l-5,y:sy(t)+3,"text-anchor":"end","font-size":"9",fill:"#8a8475"});
+        lbl.textContent=t+"\u00B0";
+      }
+      // X labels (0, 30, 60, 90 min)
+      [0,30,60,90].forEach(x=>{
+        const lbl=add("text",{x:sx(x),y:H-8,"text-anchor":"middle","font-size":"9",fill:"#8a8475"});
+        lbl.textContent=x;
+      });
+
+      // Build an SVG path string from a series
+      const path=d=>d.map((p,i)=>(i?"L":"M")+sx(p[0]).toFixed(1)+" "+sy(p[1]).toFixed(1)).join(" ");
+
+      // Fluntern line (fixed station) — dark, drawn first/underneath
+      add("path",{d:path(FL_DATA),fill:"none",stroke:"#1c2733","stroke-width":2,"stroke-dasharray":"4 3"});
+      // SenseBox line (mobile) — amber, on top
+      add("path",{d:path(SB_DATA),fill:"none",stroke:"#c8702a","stroke-width":1.8});
+    })();
   </script>
 </body>
 </html>
