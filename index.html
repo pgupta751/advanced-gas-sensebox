@@ -2,26 +2,26 @@
 <html lang="en">
 <!--
 ==========================================================================================
-  ADVANCED GIS - ASSIGNMENT 3 : Interactive Map Client for SenseBox Data
+  Interactive Web App for SenseBox Data
   ------------------------------------------------------------------------------------------
   THEME ("purpose"):
-      "Can you trust a mobile SenseBox reading? Validating VGI against an official station."
+      "validation of mobile SenseBox readings in the Sihl valley. Validating against an official station."
       On the evening of 10 May 2026 a SenseBox was carried on a ~43-minute walking loop
       near Leimbach, in the Sihl valley. The first minutes of the log were discarded as a
-      startup artifact (the sensor was still equilibrating from inside a bag: ~23 C / 48% /
+      startup artifact (the sensor was first inside a bag: ~23 C / 48% /
       ~2 lux, physically impossible for the open evening air). Once equilibrated, the sensor
       read a stable ~14 C and ~95% humidity for the rest of the walk. This app maps those
       validated readings and compares them to an official fixed weather station (MeteoSwiss
       Zurich-Fluntern, ~13.3 C / ~95% the same evening) to show the SenseBox readings are
       plausible once the artifact is removed. The near-uniform temperature is the finding:
-      the valley air was genuinely stable, and the cleaned VGI data agrees with ground truth.
+      the valley air was genuinely stable, and the cleaned sensebox data agrees with ground truth.
 
   STRUCTURE OF THIS FILE:
       1. <head>  - loads the ArcGIS Maps SDK (v5.0, web-components + module API) and styles.
       2. <body>
            a. <arcgis-map>          - the map, with zoom / legend / basemap-toggle widgets.
            b. #panel                - side panel holding the theme text + the layer toggle
-                                       + the required "About us / Legal / Privacy" sections.
+                                       + the "About us / Legal / Privacy" sections.
       3. <script type="module">      - loads the two FeatureLayers (SenseBox + Fluntern),
                                        defines their renderers + popups, adds them to the map,
                                        and wires the visibility-toggle checkbox.
@@ -29,7 +29,7 @@
   DATA LAYERS:
       Layer 1 (mine):   SenseBox walk, 302 VALID points, coloured BY TEMPERATURE. Coordinates
                         joined from a separate Strava GPX track by timestamp. The first ~7 min
-                        (114 pts) were removed as a sensor-equilibration artifact (bag warmth).
+                        (114 pts) were removed as a sensor-equilibration artifact (sensor inside a handbag -> artificial warmth).
       Layer 2 (extern): MeteoSwiss Zurich-Fluntern (SMA) station, 10 readings spanning the
                         walk window. NOTE / LIMITATION: the nearest dense city station network
                         (Stadtklima Zurich) had not yet published May data, and its closest
@@ -37,10 +37,8 @@
                         for that exact evening, though it sits ~5 km away and higher (556 m).
                         This limitation is stated openly in the panel below.
 
-  MAP CONTROLS (>= 3 required):  (1) zoom  (2) home  (3) basemap toggle  (4) legend
+  MAP CONTROLS:  (1) zoom  (2) home  (3) basemap toggle  (4) legend
                                  (5) layer-visibility toggle (panel checkbox).
-
-  >>> TO RUN: replace the two PLACEHOLDER URLs and the API KEY marked "REPLACE_ME" below.
 ==========================================================================================
 -->
 <head>
@@ -53,16 +51,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Familjen+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- esriConfig MUST be set before the SDK script loads (carries the API key) -->
+  <!-- API key -->
   <script>
     var esriConfig = {
-      apiKey: "AAPTaf1DEwZmIVkZlLPfNhpcDOg..BzyvETjvONOLbqEnKSRxVL_PE2j1i3W7pmizZhM97YMwAj6bhGEHX6OWYTJds-_TCdLaGKRQnFrkwFO-iRPL_wweN0VWVXy4eEMcoTvP-7S5vNULDV0f0kTVqzBVbVyEA7BGB1SmsNh31MYq8Lg2l8NQiRMLJh_XNcFbhrLAQ31yxBthf198NZV_AYDMExeu4eX-oEDb2mpDIGaXqHNE_qzF-h78gA0iPm--XvkPzQQUQXM3mUp5UMXPPPqEB56WuEoHZLa1yXbzpiEqAT1_CiBBQjAZ"   /* <-- paste your ArcGIS Online API key */
+      apiKey: "AAPTaf1DEwZmIVkZlLPfNhpcDOg..BzyvETjvONOLbqEnKSRxVL_PE2j1i3W7pmizZhM97YMwAj6bhGEHX6OWYTJds-_TCdLaGKRQnFrkwFO-iRPL_wweN0VWVXy4eEMcoTvP-7S5vNULDV0f0kTVqzBVbVyEA7BGB1SmsNh31MYq8Lg2l8NQiRMLJh_XNcFbhrLAQ31yxBthf198NZV_AYDMExeu4eX-oEDb2mpDIGaXqHNE_qzF-h78gA0iPm--XvkPzQQUQXM3mUp5UMXPPPqEB56WuEoHZLa1yXbzpiEqAT1_CiBBQjAZ"
     };
   </script>
   <script type="module" src="https://js.arcgis.com/5.0/"></script>
 
   <style>
-    /* ---- Theme tokens: a dusk palette that echoes the warm->cool temperature story ---- */
+    /* ---- Theme tokens: a dusk palette for our temperature story ---- */
     :root {
       --ink:        #1c2733;   /* near-black slate for text         */
       --paper:      #f4f1ea;   /* warm off-white panel background   */
@@ -148,9 +146,9 @@
 
 <body>
   <!--
-    THE MAP. Centred on the Sihl-valley loop. Three widgets are declared as child
-    components: zoom, basemap toggle (topographic <-> imagery), and the legend.
-    A fourth control (layer visibility) lives in the panel as an HTML checkbox.
+    THE MAP. Centred on the Sihl-valley loop. Four widgets are declared as child
+    components: zoom, home, basemap toggle (topographic <-> imagery), and the legend.
+    A fifth control (layer visibility) lives in the panel as an HTML checkbox.
   -->
   <arcgis-map basemap="arcgis/topographic" center="8.5190, 47.3245" zoom="15">
     <arcgis-zoom slot="top-left"></arcgis-zoom>
@@ -159,10 +157,10 @@
     <arcgis-legend slot="bottom-left"></arcgis-legend>
   </arcgis-map>
 
-  <!-- READING PANEL: theme + controls + required sections -->
+  <!-- READING PANEL: theme + controls + supporting sections -->
   <aside id="panel">
     <div class="kicker">Advanced GIS &middot; Assignment 3</div>
-    <h1>Can you trust a mobile sensor?</h1>
+    <h1>SenseBox Temperature Data near the Sihl river</h1>
     <p>A SenseBox carried on a 43-minute evening walk near Leimbach, in the Sihl valley
        (10&nbsp;May&nbsp;2026, 20:19&ndash;21:02 local). The first minutes were discarded as a
        startup artifact &mdash; the sensor was still warm from its bag. Once equilibrated, it
@@ -174,7 +172,7 @@
     <div class="ramp"></div>
     <div class="ramp-labels"><span>~13.7&deg;C</span><span>SenseBox temperature (validated)</span><span>~15.6&deg;C</span></div>
 
-    <!-- REQUIRED visibility toggle (controls the external Fluntern layer) -->
+    <!-- visibility toggle (controls the external Fluntern layer) -->
     <h2>Compare with the official station</h2>
     <p class="small">Toggle the MeteoSwiss Z&uuml;rich-Fluntern reading on/off to compare your
        mobile readings against a fixed station measuring the same evening.</p>
@@ -184,7 +182,7 @@
       <label for="toggle-fluntern">Show MeteoSwiss Fluntern station</label>
     </div>
 
-    <!-- FURTHER FUNCTIONALITY: temperature-vs-time comparison chart.
+    <!-- temperature-vs-time comparison chart.
          Drawn as inline SVG from data embedded in the script below (no external library).
          Shows the SenseBox transect converging onto the flat official-station line. -->
     <div id="chart-wrap" style="margin-top:14px;">
@@ -198,14 +196,12 @@
         start, the SenseBox tracks the official station within ~1&deg;C &mdash; the readings are validated.</p>
     </div>
 
-    <!-- REQUIRED: theme/purpose already stated above. Below: the three policy sections. -->
+    <!-- theme/purpose already stated above. Below: the about/legal/privacy
+         sections plus data & limitations note. -->
     <h2>About us</h2>
     <p class="small" id="about-text">
-      <!-- TODO (you, in your own words): who you are, in the name of the lab task.
-           e.g. "Created by [name] for the Advanced GIS course (FS26) at ETH Zurich,
-           Institute of Geodesy and Photogrammetry, as part of the SenseBox lab." -->
-      Created for the Advanced GIS course (FS&nbsp;26) at ETH&nbsp;Z&uuml;rich as part of the
-      SenseBox ambient-sensing lab. [Replace with your name and a sentence about you.]
+      Created by Priyam Gupta for the Advanced GIS course (FS&nbsp;26) at ETH&nbsp;Z&uuml;rich as part of the
+      SenseBox ambient-sensing lab. Priyam is a computer science student in Zurich who enjoys going on nature walks along the sihl river.
     </p>
 
     <h2>Legal notice</h2>
@@ -226,7 +222,7 @@
     <p class="small">
       Layer 1 &mdash; SenseBox, 302 valid points (the first ~7&nbsp;min / 114 points were
       removed as a sensor-equilibration artifact: the device read ~23&deg;C at ~2&nbsp;lux,
-      i.e. still inside a bag). Coordinates joined from a Strava GPX track by timestamp.
+      i.e. still inside a bag). Coordinates joined from a Strava GPX track by timestamp. (sensebox GPS didn't work)
       Layer 2 &mdash; MeteoSwiss Fluntern (SMA), 10 readings bracketing the walk window.
       <strong>Limitation:</strong> the dense Stadtklima Z&uuml;rich network had not yet
       published May data and its nearest station was 1.5&nbsp;km away, so Fluntern (~5&nbsp;km
@@ -251,7 +247,7 @@
     await mapEl.viewOnReady();          // wait until the map view exists
 
     /* -------------------------------------------------------------------------------
-       LAYER 1 — SenseBox walk (MINE). Replace the URL with your published service /0.
+       LAYER 1 — SenseBox walk (MINE)
        Popup shows temperature, humidity, elevation and local time for each reading.
        ------------------------------------------------------------------------------- */
     const senseboxPopup = {
@@ -264,13 +260,10 @@
     };
 
     const sensebox = new FeatureLayer({
-      // >>> REPLACE with your published *CLEAN* SenseBox layer URL (must end in /0):
-      //     publish sensebox_sihlwalk_clean.csv (302 pts), NOT the original 416-pt file.
       url: "https://services1.arcgis.com/VEqtF8LmJCM1Rgkd/arcgis/rest/services/sensebox_sihlwalk_clean/FeatureServer/0",
       title: "SenseBox walk (temperature)",
       outFields: ["*"],
       popupTemplate: senseboxPopup,
-      // --- Layer properties (§3.3.2) ---
       opacity: 0.85,        // slight transparency: the walk was a LOOP, so points overlap
                             // where the route doubles back; transparency lets stacked dots
                             // remain visible instead of one fully hiding another.
@@ -279,7 +272,7 @@
     });
 
     /* -------------------------------------------------------------------------------
-       LAYER 2 — MeteoSwiss Fluntern (EXTERNAL). Replace URL with your published /0.
+       LAYER 2 — MeteoSwiss Fluntern (EXTERNAL). 
        Drawn as a single distinct dark marker so it reads as "the reference point".
        ------------------------------------------------------------------------------- */
     const flunternPopup = {
@@ -292,7 +285,7 @@
     };
 
     const fluntern = new FeatureLayer({
-      // >>> REPLACE with your published Fluntern layer URL (must end in /0):
+
       url: "https://services1.arcgis.com/VEqtF8LmJCM1Rgkd/arcgis/rest/services/fluntern_external_may10/FeatureServer/0",
       title: "MeteoSwiss Fluntern station",
       outFields: ["*"],
@@ -325,13 +318,12 @@
     sensebox.renderer = renderer;
 
     /* -------------------------------------------------------------------------------
-       REQUIRED map control: visibility toggle for the external layer.
+       Map control: visibility toggle for the external layer.
        The checkbox's checked state maps directly onto layer.visible.
        ------------------------------------------------------------------------------- */
     const cb = document.getElementById("toggle-fluntern");
     cb.addEventListener("change", (e) => { fluntern.visible = e.target.checked; });
-
-    /* Optional nicety: frame the SenseBox data when everything is ready. */
+    
     await fluntern.when();
     mapEl.view.goTo(sensebox.fullExtent.expand(1.4));
   </script>
