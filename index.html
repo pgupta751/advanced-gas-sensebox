@@ -37,7 +37,8 @@
                         for that exact evening, though it sits ~5 km away and higher (556 m).
                         This limitation is stated openly in the panel below.
 
-  MAP CONTROLS (>= 3 required):  (1) zoom  (2) legend  (3) basemap toggle  (4) layer toggle.
+  MAP CONTROLS (>= 3 required):  (1) zoom  (2) home  (3) basemap toggle  (4) legend
+                                 (5) layer-visibility toggle (panel checkbox).
 
   >>> TO RUN: replace the two PLACEHOLDER URLs and the API KEY marked "REPLACE_ME" below.
 ==========================================================================================
@@ -153,6 +154,7 @@
   -->
   <arcgis-map basemap="arcgis/topographic" center="8.5190, 47.3245" zoom="15">
     <arcgis-zoom slot="top-left"></arcgis-zoom>
+    <arcgis-home slot="top-left"></arcgis-home>
     <arcgis-basemap-toggle slot="top-left" next-basemap="arcgis/imagery"></arcgis-basemap-toggle>
     <arcgis-legend slot="bottom-left"></arcgis-legend>
   </arcgis-map>
